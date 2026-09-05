@@ -29,6 +29,7 @@ export const SiteHeader: React.FC = () => {
     { href: "/dashboard/finance", label: "Financials", icon: Coins },
     { href: "/dashboard/map", label: "Geo-Map", icon: Building },
     { href: "/credit-score", label: "Credit Score", icon: CreditCard, highlight: true },
+    { href: "/chat-data", label: "Chat Data", icon: Bot, highlight: true },
     { href: "/schemes", label: "Schemes", icon: FileCheck2 },
     { href: "/compare", label: "Compare", icon: GitCompare },
     { href: "/advisor", label: "AI Advisor", icon: Bot },

@@ -31,57 +31,57 @@ export const DashboardOverviewClient: React.FC = () => {
   }, [margin, selectedCategory.id]);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto py-4">
-      {/* Context Control Bar */}
-      <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-teal-950 text-white p-6 rounded-3xl shadow-sm border border-teal-800/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div className="space-y-4 max-w-7xl mx-auto py-2">
+      {/* Context Control Bar (X-Style) */}
+      <div className="bg-[#16181c] border border-[#2f3336] p-4 sm:p-5 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-800/60 text-teal-200 text-xs font-semibold mb-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-teal-300" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black border border-[#2f3336] text-[#71767b] text-xs font-semibold mb-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#1d9bf0]" />
             <span>SIH26091 • MoSJE Decision Support System</span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-            Hyper-Local Enterprise Feasibility Dashboard
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white">
+            Enterprise Feasibility & Viability Engine
           </h1>
-          <p className="text-xs text-teal-200/90 mt-0.5">
-            Empirical evidence, competitor density, and deterministic financial structuring.
+          <p className="text-xs text-[#71767b] mt-0.5">
+            Empirical demand evidence, competitor density, and deterministic financial structuring.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Link href="/credit-score">
-            <Button variant="outline" size="sm" className="gap-1.5 bg-white/10 text-white border-white/20 hover:bg-white/20">
-              <CreditCard className="w-3.5 h-3.5 text-amber-300" />
-              <span>Credit Score (300-900)</span>
-            </Button>
+            <button className="px-3.5 py-1.5 rounded-full border border-[#2f3336] bg-black text-white hover:bg-[#202327] text-xs font-semibold flex items-center gap-1.5 transition-colors">
+              <CreditCard className="w-3.5 h-3.5 text-[#1d9bf0]" />
+              <span>Credit Score</span>
+            </button>
           </Link>
           <Link href="/report">
-            <Button variant="amber" size="sm" className="gap-1.5 shadow-md">
+            <button className="px-3.5 py-1.5 rounded-full bg-white text-black hover:bg-[#d7dbdc] text-xs font-bold flex items-center gap-1.5 transition-colors">
               <FileText className="w-3.5 h-3.5" />
               <span>Print Dossier</span>
-            </Button>
+            </button>
           </Link>
         </div>
       </div>
 
       {/* 3 Parameter Selectors */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 bg-[#16181c] rounded-2xl border border-[#2f3336]">
         {/* Location */}
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-teal-100 text-teal-800">
+        <div className="p-2.5 rounded-xl bg-black border border-[#2f3336] flex items-center gap-3">
+          <div className="p-2 rounded-full bg-[#16181c] text-[#1d9bf0]">
             <MapPin className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0">
-            <span className="text-[10px] font-bold uppercase text-slate-500 block">Location Target</span>
+            <span className="text-[10px] font-bold uppercase text-[#71767b] block">Target Village / Block</span>
             <select
               value={selectedLocation.id}
               onChange={(e) => {
                 const loc = LOCATIONS.find((l) => l.id === e.target.value);
                 if (loc) setSelectedLocation(loc);
               }}
-              className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer truncate"
+              className="w-full bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer truncate"
             >
               {LOCATIONS.map((loc) => (
-                <option key={loc.id} value={loc.id}>
+                <option key={loc.id} value={loc.id} className="bg-[#16181c] text-white">
                   {loc.name}, {loc.district} ({loc.state})
                 </option>
               ))}
@@ -90,39 +90,48 @@ export const DashboardOverviewClient: React.FC = () => {
         </div>
 
         {/* Business */}
-        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-teal-100 text-teal-800">
+        <div className="p-2.5 rounded-xl bg-black border border-[#2f3336] flex items-center gap-3">
+          <div className="p-2 rounded-full bg-[#16181c] text-[#1d9bf0]">
             <Building className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0">
-            <span className="text-[10px] font-bold uppercase text-slate-500 block">Sector / Category</span>
+            <span className="text-[10px] font-bold uppercase text-[#71767b] block">Enterprise Sector</span>
             <select
               value={selectedCategory.id}
               onChange={(e) => {
                 const cat = BUSINESS_CATEGORIES.find((c) => c.id === e.target.value);
                 if (cat) setSelectedCategory(cat);
               }}
-              className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer truncate"
+              className="w-full bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer truncate"
             >
               {BUSINESS_CATEGORIES.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
+                <option key={cat.id} value={cat.id} className="bg-[#16181c] text-white">
+                  {cat.name} ({cat.risk_level} Risk)
                 </option>
               ))}
             </select>
           </div>
         </div>
 
-        {/* Capital */}
-        <div className="p-3 rounded-xl bg-amber-50/60 border border-amber-200 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-amber-100 text-amber-800">
+        {/* Margin Input */}
+        <div className="p-2.5 rounded-xl bg-black border border-[#2f3336] flex items-center gap-3">
+          <div className="p-2 rounded-full bg-[#16181c] text-[#1d9bf0]">
             <Coins className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0">
-            <span className="text-[10px] font-bold uppercase text-amber-800 block">Your Equity Margin</span>
-            <span className="text-xs font-black text-slate-900 font-mono">
-              ₹{margin.toLocaleString("en-IN")} → Total: ₹{plan.total_project_cost.toLocaleString("en-IN")}
-            </span>
+            <span className="text-[10px] font-bold uppercase text-[#71767b] block">Available Margin (10% Equity)</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-[#71767b]">₹</span>
+              <input
+                type="number"
+                min={10000}
+                max={500000}
+                step={5000}
+                value={margin}
+                onChange={(e) => setMargin(Number(e.target.value))}
+                className="w-full bg-transparent text-xs font-bold text-white focus:outline-none font-mono"
+              />
+            </div>
           </div>
         </div>
       </div>

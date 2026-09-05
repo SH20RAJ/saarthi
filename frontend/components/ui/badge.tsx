@@ -8,17 +8,17 @@ function cn(...inputs: any[]) {
 }
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-mono font-semibold transition-colors focus:outline-none",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-slate-900 text-white hover:bg-slate-800",
-        secondary: "border-transparent bg-slate-100 text-slate-900 hover:bg-slate-200",
-        teal: "border-teal-300 bg-teal-50 text-teal-800",
-        amber: "border-amber-300 bg-amber-50 text-amber-800",
-        success: "border-emerald-300 bg-emerald-50 text-emerald-800",
-        destructive: "border-red-300 bg-red-50 text-red-800",
-        outline: "text-slate-800 border-slate-300",
+        default: "border-[#2f3336] bg-[#16181c] text-white",
+        secondary: "border-[#2f3336] bg-black text-[#71767b]",
+        teal: "border-[#1d9bf0]/40 bg-[#1d9bf0]/10 text-[#1d9bf0]",
+        amber: "border-amber-500/40 bg-amber-500/10 text-amber-400",
+        success: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
+        destructive: "border-red-500/40 bg-red-500/10 text-red-400",
+        outline: "border-[#2f3336] text-[#71767b] bg-transparent",
       },
     },
     defaultVariants: {

@@ -16,29 +16,42 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        x: {
+          black: "#000000",
+          card: "#16181c",
+          cardHover: "#1c1f23",
+          border: "#2f3336",
+          borderLight: "#38444d",
+          text: "#e7e9ea",
+          muted: "#71767b",
+          blue: "#1d9bf0",
+          blueHover: "#1a8cd8",
+          pill: "#eff3f4",
+          pillHover: "#d7dbdc",
+        },
         primary: {
-          DEFAULT: "#0F766E", // Teal 700 - Trustworthy Civic Green
+          DEFAULT: "#1d9bf0", // X Blue
           foreground: "#FFFFFF",
-          hover: "#0D9488",
+          hover: "#1a8cd8",
         },
         secondary: {
-          DEFAULT: "#1E293B", // Slate 800
-          foreground: "#F8FAFC",
+          DEFAULT: "#16181c", // X Card
+          foreground: "#e7e9ea",
         },
         accent: {
-          DEFAULT: "#D97706", // Amber 600 - Rural Gold/Warmth
-          foreground: "#FFFFFF",
+          DEFAULT: "#eff3f4", // X High-contrast white
+          foreground: "#000000",
         },
         success: {
-          DEFAULT: "#16A34A",
+          DEFAULT: "#00ba7c", // X verified green
           foreground: "#FFFFFF",
         },
         warning: {
-          DEFAULT: "#F59E0B",
-          foreground: "#FFFFFF",
+          DEFAULT: "#ffd400", // X gold
+          foreground: "#000000",
         },
         danger: {
-          DEFAULT: "#DC2626",
+          DEFAULT: "#f4212e", // X red
           foreground: "#FFFFFF",
         },
         muted: {
@@ -51,10 +64,11 @@ const config: Config = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        pill: "9999px",
       },
       boxShadow: {
-        glass: "0 8px 32px 0 rgba(15, 23, 42, 0.08)",
-        elevation: "0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01)",
+        x: "0 0 0 1px #2f3336",
+        xHover: "0 0 0 1px #38444d",
       }
     },
   },

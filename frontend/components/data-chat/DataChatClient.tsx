@@ -19,10 +19,7 @@ import {
   Eye,
   SlidersHorizontal,
 } from "lucide-react";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-import { Input } from "../ui/input";
-import { Card, CardContent } from "../ui/card";
+import { MarkdownRenderer } from "../ui/MarkdownRenderer";
 import { LOCATIONS, BUSINESS_CATEGORIES } from "../../lib/constants";
 import { calculateFinancialPlan } from "../../lib/financial";
 
@@ -61,7 +58,7 @@ export const DataChatClient: React.FC = () => {
   const [chatInput, setChatInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // OpenAI Key from env or localStorage (secure & not hardcoded)
+  // OpenAI Key from env or localStorage
   const apiKey =
     (typeof window !== "undefined" ? localStorage.getItem("saarthi_openai_key") : null) ||
     process.env.NEXT_PUBLIC_OPENAI_API_KEY ||
@@ -119,7 +116,11 @@ export const DataChatClient: React.FC = () => {
     {
       id: "m1",
       sender: "copilot",
-      text: "Namaste! I am your Data Copilot for SAARTHI AI. Ask me anything about the enterprise dataset on the left — compare interest rates, inspect repayment EMIs, filter by risk, or stress-test cash flows.",
+      text: `### Namaste! I am your Data Copilot
+Ask me anything about the enterprise dataset on the left:
+- Compare interest rates and scheme routing (**Micro Finance 6.5%** vs **Term Loan 8%**).
+- Inspect moratorium grace periods and active monthly EMIs.
+- Evaluate localized viability scores and DSCR coverage.`,
       timestamp: "Just now",
     },
   ]);
@@ -139,15 +140,25 @@ You have real-time access to the user's filtered enterprise dataset:
 CURRENT DATASET SUMMARY:
 ${summaryContext}
 
-CURRENT INSPECTED ROW:
-${JSON.stringify(activeRow, null, 2)}
+RULES:
+1. Ground your answers strictly in the numbers above. Format your response cleanly using Markdown headings, bullet points, and bold text.
+2. If asked about a specific row, state its category, margin, loan, and moratorium period accurately.
+3. Keep answers concise, clear, and professional.`;
 
-GROUNDING RULES:
-1. Answer strictly using the numbers in the dataset. Never invent prices or interest rates.
-2. If a specific business row is mentioned, state its row ID and exact metrics.
-3. Be concise, professional, and clear. If asked in Hindi, respond in Hindi.`;
+    const apiMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages.slice(-4).map((m) => ({
+        role: m.sender === "user" ? ("user" as const) : ("assistant" as const),
+        content: m.text,
+      })),
+      { role: "user" as const, content: question },
+    ];
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    if (!apiKey.trim()) {
+      throw new Error("No OpenAI key available");
+    }
+
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -155,35 +166,28 @@ GROUNDING RULES:
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages.slice(-4).map((m) => ({
-            role: m.sender === "user" ? "user" : "assistant",
-            content: m.text,
-          })),
-          { role: "user", content: question },
-        ],
+        messages: apiMessages,
         temperature: 0.2,
         max_tokens: 350,
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenAI HTTP ${response.status}`);
+    if (!res.ok) {
+      throw new Error(`OpenAI HTTP ${res.status}`);
     }
 
-    const res = await response.json();
-    return res.choices[0]?.message?.content || "No response received.";
+    const data = await res.json();
+    return data.choices[0]?.message?.content || "No data reply.";
   };
 
   const handleSendMessage = async (textOverride?: string) => {
-    const q = textOverride || chatInput;
-    if (!q.trim() || isLoading) return;
+    const query = textOverride || chatInput;
+    if (!query.trim() || isLoading) return;
 
     const userMsg: ChatMessage = {
       id: `u-${Date.now()}`,
       sender: "user",
-      text: q,
+      text: query,
       timestamp: "Just now",
     };
 
@@ -192,11 +196,9 @@ GROUNDING RULES:
     setIsLoading(true);
 
     try {
-      const reply = await callDataAssistant(q);
-      
-      // Check if user asked to select a row
+      const reply = await callDataAssistant(query);
+      const lower = query.toLowerCase();
       let targetRowId: string | undefined = undefined;
-      const lower = q.toLowerCase();
       if (lower.includes("poultry")) targetRowId = dataset.find((r) => r.id.includes("poultry"))?.id;
       if (lower.includes("dairy")) targetRowId = dataset.find((r) => r.id.includes("dairy"))?.id;
       if (lower.includes("tailoring")) targetRowId = dataset.find((r) => r.id.includes("tailoring"))?.id;
@@ -218,7 +220,12 @@ GROUNDING RULES:
         {
           id: `c-${Date.now()}`,
           sender: "copilot",
-          text: `Based on the active dataset, ${activeRow.categoryName} in ${activeRow.locationName} requires minimum equity of ₹${activeRow.minCapital.toLocaleString("en-IN")} for a total project cost of ₹${activeRow.projectCost.toLocaleString("en-IN")}. Indicative financing is ₹${activeRow.loanAmount.toLocaleString("en-IN")} under ${activeRow.schemeTier} (${activeRow.interestRate}% interest) with ${activeRow.moratoriumMonths} months grace.`,
+          text: `### Dataset Inspection
+Based on the active records:
+- **${activeRow.categoryName}** (${activeRow.locationName}) requires minimum equity of **₹${activeRow.minCapital.toLocaleString("en-IN")}**.
+- **Total Project Cost**: ₹${activeRow.projectCost.toLocaleString("en-IN")}
+- **Indicative Loan (90%)**: ₹${activeRow.loanAmount.toLocaleString("en-IN")} routed to **${activeRow.schemeTier}** (${activeRow.interestRate}% interest).
+- **Grace Period**: ${activeRow.moratoriumMonths} Months.`,
           timestamp: "Just now",
         },
       ]);
@@ -228,80 +235,85 @@ GROUNDING RULES:
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 py-2">
-      {/* Header Bar - Minimal & Clean */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-black tracking-tight text-slate-900">
-              Chat With Your Data
-            </span>
-            <Badge variant="teal" className="text-[9px]">
-              CopilotKit Data Canvas
-            </Badge>
+    <div className="max-w-7xl mx-auto space-y-4">
+      {/* Header Bar - Minimal & Clean (X-Style) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-[#16181c] border border-[#2f3336] rounded-2xl">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center font-black text-xs shrink-0">
+            S
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Real-time conversational queries over rural enterprise micro-dataset • Clean, minimal, data-first UX.
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-bold text-white tracking-tight">
+                Enterprise Dataset Copilot
+              </h1>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-black border border-[#2f3336] text-[#1d9bf0]">
+                Live Canvas
+              </span>
+            </div>
+            <p className="text-[11px] text-[#71767b]">
+              Real-time conversational queries over rural micro-enterprise records.
+            </p>
+          </div>
         </div>
 
-        {/* 4 Quick Stat Badges */}
-        <div className="flex items-center gap-2 overflow-x-auto text-xs">
-          <div className="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 font-mono">
-            <strong>{filteredData.length}</strong> Records
-          </div>
-          <div className="px-3 py-1 rounded-xl bg-teal-50 text-teal-800 font-mono border border-teal-200">
-            Avg Score: <strong>74</strong>/100
-          </div>
-          <div className="px-3 py-1 rounded-xl bg-amber-50 text-amber-800 font-mono border border-amber-200">
-            Moratorium: <strong>3-6 Mo</strong>
-          </div>
+        {/* Quick Stat Pills */}
+        <div className="flex items-center gap-2 text-xs">
+          <span className="px-3 py-1 rounded-full bg-black border border-[#2f3336] text-neutral-300 font-mono text-[11px]">
+            <strong className="text-white">{filteredData.length}</strong> Records
+          </span>
+          <span className="px-3 py-1 rounded-full bg-black border border-[#2f3336] text-neutral-300 font-mono text-[11px]">
+            Avg Score: <strong className="text-[#1d9bf0]">74</strong>/100
+          </span>
+          <span className="px-3 py-1 rounded-full bg-black border border-[#2f3336] text-neutral-300 font-mono text-[11px]">
+            Moratorium: <strong className="text-white">3-6 Mo</strong>
+          </span>
         </div>
       </div>
 
-      {/* Main Split-Screen Workspace (Inspired by CopilotKit chat-with-your-data) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* Main Split-Screen Workspace */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         {/* Left Pane: Minimal Data Canvas (7 Cols) */}
-        <div className="lg:col-span-7 space-y-4">
+        <div className="lg:col-span-7 space-y-3">
           {/* Controls Bar: Search & Scheme Filter Tabs */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-xs">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 bg-[#16181c] p-2.5 rounded-2xl border border-[#2f3336]">
             <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <Input
+              <Search className="w-3.5 h-3.5 text-[#71767b] absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Filter sector or village..."
-                className="pl-8 h-8 text-xs border-slate-200 bg-slate-50/50"
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-black border border-[#2f3336] rounded-full text-white placeholder:text-[#71767b] focus:outline-none focus:border-[#1d9bf0]"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 self-start sm:self-auto">
+            <div className="flex items-center gap-1 self-start sm:self-auto">
               <button
                 onClick={() => setSelectedSchemeFilter("all")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
                   selectedSchemeFilter === "all"
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-white text-black font-bold"
+                    : "bg-black text-[#71767b] border border-[#2f3336] hover:text-white"
                 }`}
               >
-                All Schemes
+                All
               </button>
               <button
                 onClick={() => setSelectedSchemeFilter("Micro Finance")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
                   selectedSchemeFilter === "Micro Finance"
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-white text-black font-bold"
+                    : "bg-black text-[#71767b] border border-[#2f3336] hover:text-white"
                 }`}
               >
-                Micro Finance (&le;₹1.4L)
+                Micro Finance (≤₹1.4L)
               </button>
               <button
                 onClick={() => setSelectedSchemeFilter("Term Loan")}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
                   selectedSchemeFilter === "Term Loan"
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-white text-black font-bold"
+                    : "bg-black text-[#71767b] border border-[#2f3336] hover:text-white"
                 }`}
               >
                 Term Loan (&gt;₹1.4L)
@@ -309,11 +321,11 @@ GROUNDING RULES:
             </div>
           </div>
 
-          {/* Minimal Data Table */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-            <div className="overflow-x-auto max-h-[480px]">
+          {/* Minimal Data Table (X-Style) */}
+          <div className="bg-black rounded-2xl border border-[#2f3336] overflow-hidden">
+            <div className="overflow-x-auto max-h-[440px]">
               <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-slate-50/80 text-slate-500 uppercase text-[10px] font-bold sticky top-0 border-b border-slate-200 backdrop-blur">
+                <thead className="bg-[#16181c] text-[#71767b] uppercase text-[10px] font-bold sticky top-0 border-b border-[#2f3336]">
                   <tr>
                     <th className="p-3">Sector & Location</th>
                     <th className="p-3">Min Equity</th>
@@ -323,7 +335,7 @@ GROUNDING RULES:
                     <th className="p-3 text-center">Score</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                <tbody className="divide-y divide-[#2f3336] font-mono text-[11px]">
                   {filteredData.map((row) => {
                     const isSelected = row.id === activeRowId;
                     return (
@@ -332,36 +344,30 @@ GROUNDING RULES:
                         onClick={() => setActiveRowId(row.id)}
                         className={`cursor-pointer transition-colors ${
                           isSelected
-                            ? "bg-teal-50/80 font-semibold"
-                            : "hover:bg-slate-50/60"
+                            ? "bg-[#16181c] text-white"
+                            : "hover:bg-[#16181c]/50 text-neutral-300"
                         }`}
                       >
                         <td className="p-3 font-sans">
-                          <div className="font-bold text-slate-900 text-xs">{row.categoryName}</div>
-                          <div className="text-[10px] text-slate-500 font-normal">
+                          <div className="font-bold text-white text-xs">{row.categoryName}</div>
+                          <div className="text-[10px] text-[#71767b] font-normal">
                             {row.locationName}, {row.district}
                           </div>
                         </td>
-                        <td className="p-3 text-slate-700">₹{row.minCapital.toLocaleString("en-IN")}</td>
-                        <td className="p-3 text-slate-900 font-bold">₹{row.projectCost.toLocaleString("en-IN")}</td>
+                        <td className="p-3 text-neutral-300">₹{row.minCapital.toLocaleString("en-IN")}</td>
+                        <td className="p-3 text-white font-bold">₹{row.projectCost.toLocaleString("en-IN")}</td>
                         <td className="p-3 font-sans">
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                              row.schemeTier === "Micro Finance"
-                                ? "bg-blue-50 text-blue-800 border border-blue-200"
-                                : "bg-teal-50 text-teal-800 border border-teal-200"
-                            }`}
-                          >
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-black border border-[#2f3336] text-[#1d9bf0]">
                             {row.schemeTier} ({row.interestRate}%)
                           </span>
                         </td>
-                        <td className="p-3 text-teal-700 font-bold">₹{row.monthlyEmi.toLocaleString("en-IN")}/mo</td>
+                        <td className="p-3 text-white font-bold">₹{row.monthlyEmi.toLocaleString("en-IN")}/mo</td>
                         <td className="p-3 text-center">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                               row.viabilityScore >= 75
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-amber-100 text-amber-800"
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                                : "bg-amber-500/10 text-amber-400 border border-amber-500/30"
                             }`}
                           >
                             {row.viabilityScore}
@@ -377,128 +383,140 @@ GROUNDING RULES:
 
           {/* Active Inspected Row Detail Ribbon */}
           {activeRow && (
-            <div className="p-4 rounded-2xl bg-slate-900 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="p-3.5 rounded-2xl bg-[#16181c] border border-[#2f3336] text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400 block">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#1d9bf0] block">
                   Active Inspected Row
                 </span>
-                <span className="text-sm font-black">
+                <span className="text-xs sm:text-sm font-bold">
                   {activeRow.categoryName} ({activeRow.locationName})
                 </span>
-                <p className="text-[11px] text-slate-300 mt-0.5">
-                  Indicative Loan: <strong>₹{activeRow.loanAmount.toLocaleString("en-IN")}</strong> • Moratorium Grace: <strong>{activeRow.moratoriumMonths} Months</strong>
+                <p className="text-[11px] text-[#71767b] mt-0.5">
+                  Indicative Loan: <strong className="text-white">₹{activeRow.loanAmount.toLocaleString("en-IN")}</strong> • Grace: <strong className="text-white">{activeRow.moratoriumMonths} Months</strong>
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Badge variant="teal" className="text-[10px] font-mono">
+              <div className="flex items-center gap-1.5 text-[11px] font-mono">
+                <span className="px-2.5 py-0.5 rounded-full bg-black border border-[#2f3336] text-white">
                   DSCR: {activeRow.dscr}x
-                </Badge>
-                <Badge variant="amber" className="text-[10px]">
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-black border border-[#2f3336] text-amber-400">
                   {activeRow.demandSignal} Demand
-                </Badge>
+                </span>
               </div>
             </div>
           )}
         </div>
 
         {/* Right Pane: Minimal Copilot Chat Sidebar (5 Cols) */}
-        <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200/80 shadow-md flex flex-col h-[600px] overflow-hidden">
+        <div className="lg:col-span-5 bg-black rounded-2xl border border-[#2f3336] flex flex-col h-[570px] overflow-hidden">
           {/* Chat Header */}
-          <div className="p-4 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+          <div className="p-3.5 border-b border-[#2f3336] bg-[#16181c] flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-teal-700 flex items-center justify-center text-white shadow-xs">
-                <Bot className="w-4 h-4" />
+              <div className="w-6 h-6 rounded-full bg-white text-black flex items-center justify-center font-bold text-[10px]">
+                S
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-bold text-slate-900">Data Copilot</span>
-                  <Badge variant="teal" className="text-[8px] py-0">
+                  <span className="text-xs font-bold text-white">Data Copilot</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
                     Live
-                  </Badge>
+                  </span>
                 </div>
-                <p className="text-[10px] text-slate-500">Grounded in the active table context</p>
+                <p className="text-[10px] text-[#71767b]">Grounded in active table context</p>
               </div>
             </div>
-
-            <span className="text-[10px] font-mono text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">
+            <span className="text-[10px] font-mono text-[#71767b] bg-black px-2 py-0.5 rounded-full border border-[#2f3336]">
               gpt-4o-mini
             </span>
           </div>
 
           {/* Chat Messages */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/30">
-            {messages.map((m) => (
-              <div
-                key={m.id}
-                className={`flex ${m.sender === "user" ? "justify-end" : "justify-start"}`}
-              >
+          <div className="flex-1 p-3.5 overflow-y-auto space-y-3">
+            {messages.map((m) => {
+              const isUser = m.sender === "user";
+              return (
                 <div
-                  className={`max-w-[88%] p-3 rounded-2xl text-xs leading-relaxed ${
-                    m.sender === "user"
-                      ? "bg-teal-700 text-white rounded-br-none shadow-xs"
-                      : "bg-white text-slate-900 border border-slate-200 rounded-bl-none shadow-2xs"
-                  }`}
+                  key={m.id}
+                  className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                 >
-                  <div className="text-[10px] font-semibold opacity-60 mb-0.5">
-                    {m.sender === "user" ? "You" : "Data Copilot"}
+                  <div
+                    className={`max-w-[88%] p-3 rounded-2xl text-xs ${
+                      isUser
+                        ? "bg-[#1d9bf0] text-white rounded-br-xs"
+                        : "bg-[#16181c] text-[#e7e9ea] border border-[#2f3336] rounded-tl-xs"
+                    }`}
+                  >
+                    <div className="text-[10px] opacity-60 mb-1 flex items-center justify-between">
+                      <span className="font-semibold">{isUser ? "You" : "Data Copilot"}</span>
+                      <span className="text-[9px] text-[#71767b]">{m.timestamp}</span>
+                    </div>
+                    {isUser ? (
+                      <div className="whitespace-pre-wrap">{m.text}</div>
+                    ) : (
+                      <MarkdownRenderer content={m.text} />
+                    )}
                   </div>
-                  <div>{m.text}</div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {isLoading && (
               <div className="flex justify-start">
-                <div className="p-2.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-500 flex items-center gap-2 shadow-2xs">
-                  <Sparkles className="w-3.5 h-3.5 text-teal-700 animate-spin" />
-                  <span className="text-[11px]">Querying table data...</span>
+                <div className="p-2.5 rounded-2xl bg-[#16181c] border border-[#2f3336] text-xs text-[#71767b] flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-[#1d9bf0] animate-spin" />
+                  <span className="text-[11px]">Querying table dataset...</span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Quick Data Queries */}
-          <div className="p-2 border-t border-slate-100 bg-slate-50/60 flex items-center gap-1.5 overflow-x-auto text-[11px] whitespace-nowrap">
+          {/* Quick Data Queries (Pills) */}
+          <div className="p-2 border-t border-[#2f3336] bg-black flex items-center gap-1.5 overflow-x-auto text-[11px] whitespace-nowrap">
             <button
               onClick={() => handleSendMessage("Which enterprise has the highest viability score?")}
-              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-teal-50 hover:text-teal-800 transition-colors"
+              className="px-2.5 py-1 rounded-full bg-[#16181c] border border-[#2f3336] text-[#71767b] hover:text-white hover:border-[#71767b] transition-colors"
             >
               Highest score?
             </button>
             <button
               onClick={() => handleSendMessage("What is the EMI for Dairy in Kanke?")}
-              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-teal-50 hover:text-teal-800 transition-colors"
+              className="px-2.5 py-1 rounded-full bg-[#16181c] border border-[#2f3336] text-[#71767b] hover:text-white hover:border-[#71767b] transition-colors"
             >
               Dairy Kanke EMI?
             </button>
             <button
               onClick={() => handleSendMessage("Compare Micro Finance vs Term Loan options")}
-              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-teal-50 hover:text-teal-800 transition-colors"
+              className="px-2.5 py-1 rounded-full bg-[#16181c] border border-[#2f3336] text-[#71767b] hover:text-white hover:border-[#71767b] transition-colors"
             >
-              Compare scheme tiers?
+              Compare schemes
             </button>
           </div>
 
           {/* Input Box */}
-          <div className="p-3 border-t border-slate-200 bg-white flex items-center gap-2">
-            <Input
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-              placeholder="Ask questions about rows, EMIs, or schemes..."
-              className="h-9 text-xs"
-            />
-            <Button
-              onClick={() => handleSendMessage()}
-              disabled={isLoading}
-              variant="teal"
-              size="sm"
-              className="gap-1.5 shrink-0"
+          <div className="p-2.5 border-t border-[#2f3336] bg-black">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage();
+              }}
+              className="flex items-center gap-2 bg-[#16181c] border border-[#2f3336] rounded-full px-3 py-1.5 focus-within:border-[#1d9bf0] transition-colors"
             >
-              <Send className="w-3.5 h-3.5" />
-              <span>Ask</span>
-            </Button>
+              <input
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Ask about records, EMIs, or schemes..."
+                className="flex-1 bg-transparent text-white placeholder:text-[#71767b] text-xs focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={isLoading || !chatInput.trim()}
+                className="px-3 py-1 rounded-full bg-white text-black hover:bg-[#d7dbdc] disabled:opacity-30 disabled:hover:bg-white text-xs font-bold transition-all flex items-center gap-1 shrink-0"
+              >
+                <span>Ask</span>
+                <Send className="w-3 h-3" />
+              </button>
+            </form>
           </div>
         </div>
       </div>

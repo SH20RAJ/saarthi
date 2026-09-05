@@ -14,21 +14,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased flex flex-col font-sans">
+    <html lang="en" className="dark">
+      <body className="min-h-screen bg-black text-[#e7e9ea] antialiased flex flex-col font-sans selection:bg-[#1d9bf0]/25 selection:text-white">
         <SiteHeader />
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6">{children}</main>
-        <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
+        <main className="flex-1 px-3 sm:px-6 lg:px-8 py-5 max-w-7xl w-full mx-auto">{children}</main>
+        <footer className="border-t border-[#2f3336] bg-black py-5 text-center text-xs text-[#71767b]">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p>
-              <strong>SAARTHI AI</strong> — Ministry of Social Justice and Empowerment (MoSJE) • Smart India Hackathon 2026 (SIH26091)
-            </p>
-            <div className="flex items-center gap-4 text-slate-400 text-[11px]">
-              <span>ODbL OpenStreetMap</span>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-white tracking-tight">SAARTHI</span>
               <span>•</span>
-              <span>NBCFDC / NSFDC Norms</span>
+              <span>SIH26091 MoSJE Rural Micro-Enterprise Intelligence</span>
+            </div>
+            <div className="flex items-center gap-3 text-[11px] text-[#71767b]">
+              <span>Deterministic Financial Math</span>
               <span>•</span>
-              <span>Cloudflare Workers Edge</span>
+              <span>OpenStreetMap POIs</span>
+              <span>•</span>
+              <span>OpenAI GPT-4o</span>
             </div>
           </div>
         </footer>

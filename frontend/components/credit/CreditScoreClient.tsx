@@ -58,30 +58,29 @@ export const CreditScoreClient: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto py-4">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-teal-950 text-white p-6 sm:p-8 rounded-3xl shadow-md border border-teal-800/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+    <div className="space-y-6 max-w-7xl mx-auto py-2">
+      {/* Header Banner (X-Style) */}
+      <div className="bg-[#16181c] border border-[#2f3336] p-4 sm:p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-800/60 border border-teal-700 text-teal-200 text-xs font-semibold mb-3">
-            <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black border border-[#2f3336] text-[#71767b] text-xs font-semibold mb-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#1d9bf0]" />
             <span>Alternative Credit Intelligence for Unbanked Rural Micro-Entrepreneurs</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-            Rural Entrepreneur Credit Scoring Engine
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+            Rural Micro-Entrepreneur Credit Scoring Engine
           </h1>
-          <p className="text-xs sm:text-sm text-teal-200/90 mt-1 max-w-2xl leading-relaxed">
+          <p className="text-xs text-[#71767b] mt-1 max-w-2xl leading-relaxed">
             Evaluates creditworthiness on a 300–900 scale using alternative social collateral, SHG peer-savings discipline, PM Vishwakarma certification, and cash-flow capacity rather than urban CIBIL scores.
           </p>
         </div>
 
-        <Button
+        <button
           onClick={handlePrint}
-          variant="amber"
-          className="gap-2 shadow-md shrink-0 print:hidden"
+          className="px-4 py-2 rounded-full bg-white text-black hover:bg-[#d7dbdc] text-xs font-bold flex items-center gap-2 transition-colors shrink-0 print:hidden"
         >
           <Printer className="w-4 h-4" />
-          <span>Print Credit Certificate</span>
-        </Button>
+          <span>Print Certificate</span>
+        </button>
       </div>
 
       {/* Main Layout: Form vs Results */}
@@ -298,44 +297,44 @@ export const CreditScoreClient: React.FC = () => {
 
         {/* Right Column: Real-time Credit Score & Readiness Assessment (5 Cols) */}
         <div className="lg:col-span-5 space-y-6">
-          <Card className="sticky top-20 border-teal-200 shadow-lg overflow-hidden">
+          <Card className="sticky top-20 border-[#2f3336] bg-[#16181c] overflow-hidden">
             {/* Score Header */}
-            <div className="p-6 bg-gradient-to-br from-slate-900 via-teal-950 to-slate-950 text-white text-center">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-teal-300 block">
+            <div className="p-5 bg-black border-b border-[#2f3336] text-white text-center">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-[#1d9bf0] block">
                 RURAL CREDIT READINESS INDEX
               </span>
 
               {/* Score Meter Dial */}
-              <div className="my-4">
+              <div className="my-3">
                 <div className="text-5xl font-black font-mono tracking-tight text-white">
                   {result.score}
                 </div>
-                <div className="text-xs text-slate-400 font-medium mt-1">
+                <div className="text-xs text-[#71767b] font-medium mt-1">
                   Scale: 300 to 900 Points
                 </div>
               </div>
 
               {/* Tier Badge */}
               <div
-                className={`inline-block px-3 py-1 rounded-full text-xs font-extrabold border ${result.tierColor} shadow-xs`}
+                className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${result.tierColor}`}
               >
                 {result.tier}
               </div>
 
-              <div className="mt-4 pt-4 border-t border-white/10 flex justify-between text-xs text-slate-300">
+              <div className="mt-3 pt-3 border-t border-[#2f3336] flex justify-between text-xs text-[#71767b]">
                 <span>Risk Appraisal:</span>
-                <strong className="text-teal-200">{result.riskRating} Risk</strong>
+                <strong className="text-white">{result.riskRating} Risk</strong>
               </div>
             </div>
 
-            <CardContent className="p-6 space-y-5">
+            <CardContent className="p-5 space-y-4">
               {/* Max Recommended Financing Cushion */}
-              <div className="p-3.5 rounded-xl bg-teal-50 border border-teal-200 text-xs flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-black border border-[#2f3336] text-xs flex items-center justify-between">
                 <div>
-                  <span className="text-slate-500 block text-[10px] font-bold uppercase">
+                  <span className="text-[#71767b] block text-[10px] font-bold uppercase">
                     Recommended Max Sanction
                   </span>
-                  <span className="text-lg font-black text-teal-800 font-mono">
+                  <span className="text-lg font-black text-white font-mono">
                     ₹{result.maxSanctionAmount.toLocaleString("en-IN")}
                   </span>
                 </div>

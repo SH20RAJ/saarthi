@@ -9,24 +9,25 @@ function cn(...inputs: any[]) {
 }
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-xs font-bold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1d9bf0] disabled:pointer-events-none disabled:opacity-40 active:scale-95",
   {
     variants: {
       variant: {
-        default: "bg-slate-900 text-white hover:bg-slate-800 shadow-sm",
-        teal: "bg-teal-700 text-white hover:bg-teal-800 shadow-sm",
-        amber: "bg-amber-600 text-white hover:bg-amber-700 shadow-sm",
-        destructive: "bg-red-600 text-white hover:bg-red-700 shadow-sm",
-        outline: "border border-slate-200 bg-white hover:bg-slate-50 text-slate-800",
-        secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200",
-        ghost: "hover:bg-slate-100 hover:text-slate-900",
-        link: "text-teal-700 underline-offset-4 hover:underline",
+        default: "bg-white text-black hover:bg-[#d7dbdc]",
+        blue: "bg-[#1d9bf0] text-white hover:bg-[#1a8cd8]",
+        teal: "bg-white text-black hover:bg-[#d7dbdc]", // Alias to white pill
+        amber: "bg-white text-black hover:bg-[#d7dbdc]", // Alias to white pill
+        destructive: "bg-[#f4212e] text-white hover:bg-[#dc1e29]",
+        outline: "border border-[#2f3336] bg-transparent text-white hover:bg-[#16181c] hover:border-[#536471]",
+        secondary: "bg-[#16181c] border border-[#2f3336] text-white hover:bg-[#202327]",
+        ghost: "hover:bg-[#16181c] text-[#71767b] hover:text-white",
+        link: "text-[#1d9bf0] underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-lg px-3 text-[11px]",
-        lg: "h-11 rounded-xl px-6 text-sm",
-        icon: "h-9 w-9",
+        sm: "h-8 rounded-full px-3 text-[11px]",
+        lg: "h-10 rounded-full px-6 text-sm",
+        icon: "h-8 w-8 rounded-full",
       },
     },
     defaultVariants: {
